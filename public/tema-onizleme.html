@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bademcioğlu Yoğurtları — Tema & Renk Paleti Önizlemesi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,600;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #090D14;
+      --surface-dark: #101726;
+      --surface-elevated: #162033;
+      --surface-card: rgba(16, 23, 38, 0.75);
+      --border-dark: rgba(255, 255, 255, 0.08);
+      --border-glow: rgba(245, 158, 11, 0.35);
+      
+      --milk-white: #FFFFFF;
+      --milk-cream: #FDFBF7;
+      --text-muted: #94A3B8;
+      
+      --amber-primary: #F59E0B;
+      --amber-dark: #D97706;
+      --amber-glow: rgba(245, 158, 11, 0.15);
+      
+      --emerald-primary: #10B981;
+      --emerald-glow: rgba(16, 185, 129, 0.15);
+      
+      --rose-primary: #F43F5E;
+      --rose-glow: rgba(244, 63, 94, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--milk-white);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      line-height: 1.5;
+      padding-bottom: 60px;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 20px;
+    }
+
+    /* Gradient Background Glow */
+    .ambient-glow {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.08) 0%, rgba(16, 185, 129, 0.04) 40%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Header & Branding */
+    .brand-header {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    /* Logo Badge (Oval Bademcioğlu) */
+    .logo-badge {
+      background: #000000;
+      border: 2px solid #FFFFFF;
+      border-radius: 9999px;
+      padding: 16px 36px;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.8), 0 0 25px rgba(245, 158, 11, 0.2);
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .logo-badge::before {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 10px;
+      right: 10px;
+      bottom: 3px;
+      border: 1px dashed rgba(255, 255, 255, 0.35);
+      border-radius: 9999px;
+      pointer-events: none;
+    }
+
+    .logo-top-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .cow-icon {
+      width: 44px;
+      height: 44px;
+      fill: none;
+      stroke: #FFFFFF;
+      stroke-width: 1.6;
+    }
+
+    .logo-title {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 28px;
+      font-weight: 700;
+      color: #FFFFFF;
+      letter-spacing: 0.5px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    }
+
+    .logo-subtitle {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 2.5px;
+      color: #FFFFFF;
+      text-transform: uppercase;
+      background: #000000;
+      padding: 4px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      margin-top: 6px;
+    }
+
+    .badge-pills {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .badge-pill {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-dark);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge-pill.active {
+      color: var(--amber-primary);
+      border-color: rgba(245, 158, 11, 0.3);
+      background: rgba(245, 158, 11, 0.08);
+    }
+
+    /* Section Headings */
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--milk-white);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title span.dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--amber-primary);
+      box-shadow: 0 0 10px var(--amber-primary);
+    }
+
+    /* Color Swatches Grid */
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .color-card {
+      background: var(--surface-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-dark);
+      border-radius: 18px;
+      overflow: hidden;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+    }
+
+    .color-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-glow);
+      box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.6);
+    }
+
+    .color-preview {
+      height: 90px;
+      display: flex;
+      align-items: flex-end;
+      padding: 12px;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    .color-info {
+      padding: 14px;
+    }
+
+    .color-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--milk-white);
+    }
+
+    .color-role {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .color-hex {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--amber-primary);
+      margin-top: 6px;
+      display: block;
+      background: rgba(0,0,0,0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      width: fit-content;
+    }
+
+    /* Bento Box Dashboard Grid */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .bento-card {
+      background: var(--surface-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-dark);
+      border-radius: 20px;
+      padding: 24px;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .bento-card:hover {
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    .col-4 { grid-column: span 4; }
+    .col-6 { grid-column: span 6; }
+    .col-8 { grid-column: span 8; }
+    .col-12 { grid-column: span 12; }
+
+    @media (max-width: 900px) {
+      .col-4, .col-6, .col-8 { grid-column: span 12; }
+    }
+
+    /* Metric Card Styling */
+    .metric-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .metric-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .metric-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--milk-white);
+      letter-spacing: -0.5px;
+    }
+
+    .metric-subtext {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Interactive Tab Bar Preview */
+    .interactive-tabs {
+      display: flex;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 6px;
+      border-radius: 14px;
+      border: 1px solid var(--border-dark);
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .tab-btn.active {
+      background: var(--surface-elevated);
+      color: var(--milk-white);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .tab-btn:hover:not(.active) {
+      color: var(--milk-white);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    /* Customer Quick Chips */
+    .chip-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .customer-chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-dark);
+      border-radius: 12px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--milk-white);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .customer-chip:hover {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: var(--amber-primary);
+      transform: scale(1.02);
+    }
+
+    .customer-chip.selected {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.3));
+      border-color: var(--amber-primary);
+      box-shadow: 0 0 15px rgba(245, 158, 11, 0.25);
+    }
+
+    /* Payment Status Radio Tiles */
+    .status-tiles {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .status-tile {
+      border: 1px solid var(--border-dark);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      background: rgba(0,0,0,0.25);
+      transition: all 0.2s;
+    }
+
+    .status-tile.paid {
+      border-color: var(--emerald-primary);
+      background: var(--emerald-glow);
+      color: var(--emerald-primary);
+    }
+
+    .status-tile.unpaid {
+      border-color: var(--rose-primary);
+      background: var(--rose-glow);
+      color: var(--rose-primary);
+    }
+
+    .status-tile.partial {
+      border-color: var(--amber-primary);
+      background: var(--amber-glow);
+      color: var(--amber-primary);
+    }
+
+    .status-title {
+      font-weight: 700;
+      font-size: 13px;
+      display: block;
+    }
+
+    .status-sub {
+      font-size: 10px;
+      opacity: 0.8;
+      margin-top: 2px;
+      display: block;
+    }
+
+    /* Thermal Receipt Mockup */
+    .receipt-preview {
+      background: #FFFFFF;
+      color: #000000;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 18px;
+      border-radius: 12px;
+      font-size: 11px;
+      line-height: 1.4;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+      position: relative;
+    }
+
+    .receipt-preview::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 0;
+      right: 0;
+      height: 8px;
+      background: radial-gradient(circle, transparent 4px, #FFFFFF 5px);
+      background-size: 12px 12px;
+    }
+
+    .receipt-header {
+      text-align: center;
+      border-bottom: 1px dashed #000;
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+    }
+
+    .receipt-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 3px;
+    }
+
+    .receipt-total {
+      border-top: 1px dashed #000;
+      padding-top: 6px;
+      margin-top: 6px;
+      font-weight: 700;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Buttons */
+    .btn {
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 12px 24px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--amber-primary), var(--amber-dark));
+      color: #000000;
+      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(245, 158, 11, 0.45);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.96);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border-dark);
+      color: var(--milk-white);
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .toast-pill {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1E293B;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: var(--milk-white);
+      padding: 10px 20px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 100;
+    }
+
+    .toast-pill.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-6px);
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <div class="container">
+    <!-- Header Branding -->
+    <header class="brand-header">
+      <!-- Oval Bademcioğlu Brand Badge -->
+      <div class="logo-badge">
+        <div class="logo-top-row">
+          <!-- Hand-etched Cow SVG Emblem -->
+          <svg class="cow-icon" viewBox="0 0 48 48">
+            <path d="M12 16 C8 12, 4 14, 4 18 C4 20, 8 20, 10 20" stroke-linecap="round"/>
+            <path d="M36 16 C40 12, 44 14, 44 18 C44 20, 40 20, 38 20" stroke-linecap="round"/>
+            <path d="M14 17 C16 13, 32 13, 34 17 C38 22, 36 34, 30 38 C28 40, 20 40, 18 38 C12 34, 10 22, 14 17 Z"/>
+            <ellipse cx="18" cy="24" rx="2" ry="2.5" fill="#FFFFFF"/>
+            <ellipse cx="30" cy="24" rx="2" ry="2.5" fill="#FFFFFF"/>
+            <path d="M18 32 C20 31, 28 31, 30 32" stroke-linecap="round"/>
+            <circle cx="21" cy="35" r="1" fill="#FFFFFF"/>
+            <circle cx="27" cy="35" r="1" fill="#FFFFFF"/>
+          </svg>
+          <h1 class="logo-title">Bademcioğlu Yoğurtları</h1>
+        </div>
+        <div class="logo-subtitle">ANAMUR'UN YERLİ MARKASI</div>
+      </div>
+
+      <p style="color: var(--text-muted); font-size: 14px; max-width: 600px;">
+        UI/UX Pro Max kuralları (Bento Grid #39 + Dark Boutique #71 + Artisan Dairy #33) ve Framer Motion dinamikleriyle oluşturulan kurumsal renk & arayüz kılavuzu.
+      </p>
+
+      <div class="badge-pills">
+        <div class="badge-pill active">
+          <span>●</span> <span>Obsidyen Siyah & Altın Amber</span>
+        </div>
+        <div class="badge-pill">
+          <span>🥛</span> <span>Saf Süt & Mandıra Kaymağı</span>
+        </div>
+        <div class="badge-pill">
+          <span>✨</span> <span>Bento Box Modular Cards</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 1. Renk Paleti ve Kodları -->
+    <h2 class="section-title"><span class="dot"></span> Kurumsal Renk Paleti & HEX Kodları</h2>
+    <div class="color-grid">
+      <!-- 1. Brand Obsidian -->
+      <div class="color-card" onclick="copyHex('#090D14')">
+        <div class="color-preview" style="background: #090D14; color: #FFFFFF; border-bottom: 1px solid rgba(255,255,255,0.1);">
+          Ana Arka Plan
+        </div>
+        <div class="color-info">
+          <div class="color-name">Brand Obsidian</div>
+          <div class="color-role">Mat derin gece & oval etiket zemin rengi</div>
+          <span class="color-hex">#090D14</span>
+        </div>
+      </div>
+
+      <!-- 2. Surface Elevated -->
+      <div class="color-card" onclick="copyHex('#101726')">
+        <div class="color-preview" style="background: #101726; color: #FFFFFF; border-bottom: 1px solid rgba(255,255,255,0.1);">
+          Bento Kart Zemin
+        </div>
+        <div class="color-info">
+          <div class="color-name">Surface Slate</div>
+          <div class="color-role">Bento modül kartları & yan menü</div>
+          <span class="color-hex">#101726</span>
+        </div>
+      </div>
+
+      <!-- 3. Artisan Amber -->
+      <div class="color-card" onclick="copyHex('#F59E0B')">
+        <div class="color-preview" style="background: #F59E0B; color: #000000;">
+          Yoğurt & Marka Vurgusu
+        </div>
+        <div class="color-info">
+          <div class="color-name">Artisan Amber</div>
+          <div class="color-role">Kova/fıçı, yoğurt dağıtımı & aksiyon butonları</div>
+          <span class="color-hex">#F59E0B</span>
+        </div>
+      </div>
+
+      <!-- 4. Milk White -->
+      <div class="color-card" onclick="copyHex('#FFFFFF')">
+        <div class="color-preview" style="background: #FFFFFF; color: #000000;">
+          Saf Süt Beyazı
+        </div>
+        <div class="color-info">
+          <div class="color-name">Dairy White</div>
+          <div class="color-role">Net metinler, logodaki hilal çizgileri</div>
+          <span class="color-hex">#FFFFFF</span>
+        </div>
+      </div>
+
+      <!-- 5. Farm Emerald -->
+      <div class="color-card" onclick="copyHex('#10B981')">
+        <div class="color-preview" style="background: #10B981; color: #000000;">
+          Tahsil Edildi / Kâr
+        </div>
+        <div class="color-info">
+          <div class="color-name">Farm Emerald</div>
+          <div class="color-role">Peşin ödemeler, kârlılık & başarı bildirimleri</div>
+          <span class="color-hex">#10B981</span>
+        </div>
+      </div>
+
+      <!-- 6. Debt Rose -->
+      <div class="color-card" onclick="copyHex('#F43F5E')">
+        <div class="color-preview" style="background: #F43F5E; color: #FFFFFF;">
+          Veresiye / Alacak
+        </div>
+        <div class="color-info">
+          <div class="color-name">Debt Crimson</div>
+          <div class="color-role">Veresiye borç bakiyeleri & ödenmeyenler</div>
+          <span class="color-hex">#F43F5E</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Bento Modülleri ve Canlı Arayüz Örneği -->
+    <h2 class="section-title"><span class="dot"></span> Dağıtım Ekranı Bento Modülleri (Canlı Önizleme)</h2>
+
+    <!-- Sekmeler -->
+    <div class="interactive-tabs">
+      <button class="tab-btn active"><span>🚚</span> Dağıtılacaklar (Bugün)</button>
+      <button class="tab-btn"><span>👤</span> Müşteri Ekle</button>
+      <button class="tab-btn"><span>📋</span> Veresiye Satışlar</button>
+      <button class="tab-btn"><span>📅</span> Eski Kayıtlar</button>
+      <button class="tab-btn"><span>📊</span> Toplam Yoğurt</button>
+    </div>
+
+    <div class="bento-grid">
+      <!-- KPI 1: Günlük Dağıtılan Kova -->
+      <div class="bento-card col-4">
+        <div class="metric-top">
+          <span class="metric-label">Bugün Dağıtılan</span>
+          <div class="metric-icon" style="background: var(--amber-glow); color: var(--amber-primary);">
+            🪣
+          </div>
+        </div>
+        <div class="metric-value">48 <span style="font-size: 16px; color: var(--text-muted);">Kova</span></div>
+        <div class="metric-subtext">
+          <span style="color: var(--amber-primary);">● 32 Büyük</span>
+          <span>• 16 Küçük</span>
+        </div>
+      </div>
+
+      <!-- KPI 2: Kasa Nakit Tahsilat -->
+      <div class="bento-card col-4">
+        <div class="metric-top">
+          <span class="metric-label">Tahsil Edilen Nakit</span>
+          <div class="metric-icon" style="background: var(--emerald-glow); color: var(--emerald-primary);">
+            ₺
+          </div>
+        </div>
+        <div class="metric-value" style="color: var(--emerald-primary);">₺12.450</div>
+        <div class="metric-subtext" style="color: var(--emerald-primary);">
+          ✓ 14 Müşteri Peşin Ödedi
+        </div>
+      </div>
+
+      <!-- KPI 3: Kalan Veresiye -->
+      <div class="bento-card col-4">
+        <div class="metric-top">
+          <span class="metric-label">Kalan Alacak / Veresiye</span>
+          <div class="metric-icon" style="background: var(--rose-glow); color: var(--rose-primary);">
+            ⚠️
+          </div>
+        </div>
+        <div class="metric-value" style="color: var(--rose-primary);">₺3.800</div>
+        <div class="metric-subtext" style="color: var(--rose-primary);">
+          4 Müşteride Açık Bakiye
+        </div>
+      </div>
+
+      <!-- Dağıtım Formu Bento Kartı -->
+      <div class="bento-card col-8">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h3 style="font-size: 16px; font-weight: 700;">Hızlı Müşteri Seçimi & Satış Girişi</h3>
+            <p style="font-size: 12px; color: var(--text-muted);">Tıklanan müşterinin özel kova ve iade fiyatı otomatik gelir</p>
+          </div>
+          <span style="font-size: 11px; background: rgba(245, 158, 11, 0.15); color: var(--amber-primary); padding: 4px 10px; border-radius: 20px; font-weight: 700;">
+            18 Kayıtlı Nokta
+          </span>
+        </div>
+
+        <!-- Müşteri Çipleri -->
+        <div class="chip-container">
+          <div class="customer-chip selected">
+            <span>🏪</span> <span>Merkez Şarküteri (Ali Bey)</span>
+          </div>
+          <div class="customer-chip">
+            <span>🏪</span> <span>Anamur Bereket Market</span>
+          </div>
+          <div class="customer-chip">
+            <span>🏪</span> <span>Yayla Mandıra</span>
+          </div>
+          <div class="customer-chip">
+            <span>🏪</span> <span>İskele Bakkaliyesi</span>
+          </div>
+        </div>
+
+        <!-- Fiyat ve İade Girişleri Grid -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 20px;">
+          <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-dark); padding: 14px; border-radius: 14px;">
+            <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Büyük Yoğurt (Kova)</div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 6px;">
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700;">10 Adet</span>
+              <span style="font-size: 13px; color: var(--amber-primary); font-weight: 700;">₺280 / Adet</span>
+            </div>
+          </div>
+
+          <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-dark); padding: 14px; border-radius: 14px;">
+            <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">İade Boş Kova</div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 6px;">
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; color: var(--emerald-primary);">-6 Kova</span>
+              <span style="font-size: 13px; color: var(--emerald-primary); font-weight: 700;">-₺120 Düşüldü</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ödeme Durumu Seçimi -->
+        <div style="margin-top: 18px;">
+          <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Ödeme Durumu</label>
+          <div class="status-tiles">
+            <div class="status-tile paid">
+              <span class="status-title">✓ Ödendi</span>
+              <span class="status-sub">Nakit / Havale</span>
+            </div>
+            <div class="status-tile">
+              <span class="status-title">⏳ Kısmi Ödeme</span>
+              <span class="status-sub">Örn: ₺1.000 Alındı</span>
+            </div>
+            <div class="status-tile">
+              <span class="status-title">✕ Alınmadı</span>
+              <span class="status-sub">Veresiyeye Yaz</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
+          <button class="btn btn-outline">Geçmiş Siparişler</button>
+          <button class="btn btn-primary">🖨️ Kaydet & Fiş Yazdır</button>
+        </div>
+      </div>
+
+      <!-- Termal Fiş Önizleme Bento Kartı -->
+      <div class="bento-card col-4" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+            <h3 style="font-size: 14px; font-weight: 700;">Termal Fiş Çıktısı</h3>
+            <span style="font-size: 10px; background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 4px; font-family: monospace;">80mm</span>
+          </div>
+
+          <div class="receipt-preview">
+            <div class="receipt-header">
+              <div style="font-weight: 800; font-size: 12px;">BADEMCİOĞLU YOĞURTLARI</div>
+              <div style="font-size: 9px; letter-spacing: 1px;">ANAMUR'UN YERLİ MARKASI</div>
+              <div style="font-size: 9px; margin-top: 4px;">Tarih: 17.09.2026 19:45</div>
+            </div>
+
+            <div style="font-weight: 700; margin-bottom: 6px; font-size: 10px;">
+              Müşteri: Merkez Şarküteri
+            </div>
+
+            <div class="receipt-row">
+              <span>Büyük Yoğurt (10x)</span>
+              <span>₺2.800</span>
+            </div>
+            <div class="receipt-row" style="color: #047857;">
+              <span>İade Kova (6x)</span>
+              <span>-₺120</span>
+            </div>
+
+            <div class="receipt-total">
+              <span>NET TOPLAM:</span>
+              <span>₺2.680</span>
+            </div>
+
+            <div style="margin-top: 8px; font-size: 9px; text-align: center; border-top: 1px dashed #000; padding-top: 6px;">
+              Ödeme: ÖDENDİ (NAKİT)<br>
+              <i>Mali Değeri Yoktur</i>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 20px; font-size: 11px; color: var(--text-muted); text-align: center;">
+          Bluetooth & USB Termal Yazıcılarla %100 Uyumlu
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast-pill">
+    <span>📋</span> <span id="toast-text">Renk Kodu Kopyalandı!</span>
+  </div>
+
+  <script>
+    function copyHex(hex) {
+      navigator.clipboard.writeText(hex);
+      const toast = document.getElementById('toast');
+      const text = document.getElementById('toast-text');
+      text.innerText = hex + ' Panoya Kopyalandı!';
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2000);
+    }
+  </script>
+</body>
+</html>

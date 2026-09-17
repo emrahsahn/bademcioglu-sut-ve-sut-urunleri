@@ -1,0 +1,251 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Playfair+Display:ital,wght@1,600;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #F8FAFC;
+    --foreground: #0F172A;
+    --card: #FFFFFF;
+    --card-foreground: #0F172A;
+    --border: #E2E8F0;
+    --sidebar-bg: #FFFFFF;
+    --sidebar-fg: #0F172A;
+    --primary: #D97706;
+    --primary-hover: #B45309;
+    --success: #059669;
+    --danger: #E11D48;
+  }
+
+  .dark {
+    --background: #090D14;
+    --foreground: #F8FAFC;
+    --card: #101726;
+    --card-foreground: #F8FAFC;
+    --border: rgba(51, 65, 85, 0.7);
+    --sidebar-bg: #0B101B;
+    --sidebar-fg: #F8FAFC;
+    --primary: #F59E0B;
+    --primary-hover: #D97706;
+    --success: #10B981;
+    --danger: #F43F5E;
+  }
+
+  body {
+    color: var(--foreground);
+    background-color: var(--background);
+    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  /* Çift Tema Akıllı Form & Tablo Desteği */
+  .dark input:not([type="checkbox"]):not([type="radio"]),
+  .dark select,
+  .dark textarea {
+    background-color: #121929;
+    border-color: #243049;
+    color: #F8FAFC;
+  }
+
+  .dark input:not([type="checkbox"]):not([type="radio"])::placeholder,
+  .dark textarea::placeholder {
+    color: #64748B;
+  }
+
+  .dark input:not([type="checkbox"]):not([type="radio"]):focus,
+  .dark select:focus,
+  .dark textarea:focus {
+    background-color: #151F33;
+    border-color: #F59E0B;
+  }
+
+  .dark table thead {
+    background-color: #0D1322;
+    color: #94A3B8;
+  }
+
+  .dark table tbody tr {
+    border-color: #1E293B;
+  }
+
+  .dark table tbody tr:hover {
+    background-color: rgba(30, 41, 59, 0.45);
+  }
+}
+
+/* Çift Temalı Bento Box Grid Card System */
+.bento-card {
+  background-color: #FFFFFF;
+  color: #0F172A;
+  border: 1px solid #E2E8F0;
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background-color 0.25s ease;
+}
+
+.dark .bento-card,
+html.dark .bento-card,
+[data-theme="dark"] .bento-card {
+  background-color: #101726 !important;
+  color: #F8FAFC !important;
+  border-color: #243049 !important;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+.bento-card:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.08);
+}
+
+.dark .bento-card:hover,
+html.dark .bento-card:hover {
+  border-color: rgba(148, 163, 184, 0.45) !important;
+  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.6);
+}
+
+.bento-glow-amber:hover {
+  border-color: rgba(217, 119, 6, 0.5);
+  box-shadow: 0 10px 30px -10px rgba(217, 119, 6, 0.2);
+}
+
+.dark .bento-glow-amber:hover {
+  border-color: rgba(245, 158, 11, 0.5);
+  box-shadow: 0 10px 30px -10px rgba(245, 158, 11, 0.25);
+}
+
+.bento-glow-emerald:hover {
+  border-color: rgba(5, 150, 105, 0.5);
+  box-shadow: 0 10px 30px -10px rgba(5, 150, 105, 0.2);
+}
+
+.dark .bento-glow-emerald:hover {
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.25);
+}
+
+/* Dokunsal (Tactile) Buton Geri Bildirimi */
+.tactile-btn {
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s ease;
+}
+.tactile-btn:active {
+  transform: scale(0.97);
+}
+
+/* Tabular Rakamlar (Finansal Sayıların Hizalanması) */
+.num-mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-feature-settings: 'tnum' on, 'lnum' on;
+  letter-spacing: -0.02em;
+}
+
+/* Mikro Animasyonlar */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modalScale {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes toastSlide {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-modal-pop {
+  animation: modalScale 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-toast {
+  animation: toastSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom Scrollbar - Çift Temalı */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+.dark ::-webkit-scrollbar-track {
+  background: #0B101B;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Termal Fiş Yazıcı Stilleri (58mm - 80mm) */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 12px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  aside, header, nav, button {
+    display: none !important;
+  }
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+  #thermal-receipt {
+    width: 80mm !important;
+    max-width: 80mm !important;
+    margin: 0 auto !important;
+    padding: 4mm !important;
+    box-shadow: none !important;
+    border: none !important;
+    color: #000000 !important;
+    background: #ffffff !important;
+  }
+}

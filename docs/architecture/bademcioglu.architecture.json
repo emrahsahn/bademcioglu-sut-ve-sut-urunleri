@@ -1,0 +1,194 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Bademcioğlu Yoğurtları — Sistem Mimarisi & Veri Akışı",
+    "output": "docs/architecture/bademcioglu-architecture.html",
+    "quality_profile": "standard",
+    "views": [
+      {
+        "id": "full-system",
+        "label": "Tüm Sistem Mimarisi",
+        "focus": ["client", "auth", "nextjs", "sut_modul", "yogurt_modul", "gider_modul", "receipt_engine", "storage"],
+        "note": "Kullanıcı etkileşiminden yerel veri tabanına ve fiş motoruna kadar tüm mimari akış."
+      },
+      {
+        "id": "production-distribution",
+        "label": "Süt Alım ve Yoğurt Dağıtım Hattı",
+        "focus": ["client", "sut_modul", "yogurt_modul", "storage", "receipt_engine"],
+        "note": "Müstahsilden süt alımı, yoğurt üretimi, dağıtım ve veresiye takibi."
+      },
+      {
+        "id": "security-and-auth",
+        "label": "Kimlik Doğrulama & Güvenlik",
+        "focus": ["client", "auth", "storage"],
+        "note": "Ortam değişkenleri (.env), kademeli brute-force kilitleme ve oturum yönetimi."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "client",
+      "type": "external",
+      "label": "Kullanıcı / Yetkili",
+      "sublabel": "Mobil & Masaüstü Web",
+      "pos": [40, 300],
+      "size": [130, 60]
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "Auth & Güvenlik",
+      "sublabel": "Kademeli Kilit / .env",
+      "pos": [250, 140],
+      "size": [160, 60],
+      "tag": "Rate Limiting"
+    },
+    {
+      "id": "nextjs",
+      "type": "cloud",
+      "label": "Next.js App Core",
+      "sublabel": "Vercel / React 18 / Tailwind",
+      "pos": [250, 300],
+      "size": [150, 60]
+    },
+    {
+      "id": "sut_modul",
+      "type": "backend",
+      "label": "Süt Alım & Müstahsil",
+      "sublabel": "Tartım, Birim Fiyat, Hesap",
+      "pos": [480, 140],
+      "size": [160, 60]
+    },
+    {
+      "id": "yogurt_modul",
+      "type": "backend",
+      "label": "Yoğurt Dağıtım & Stok",
+      "sublabel": "Büyük/Küçük Kova, İade, Veresiye",
+      "pos": [480, 300],
+      "size": [160, 60]
+    },
+    {
+      "id": "gider_modul",
+      "type": "backend",
+      "label": "Gider & Kasa Takibi",
+      "sublabel": "Kategori Bazlı Harcama",
+      "pos": [480, 460],
+      "size": [160, 60]
+    },
+    {
+      "id": "receipt_engine",
+      "type": "backend",
+      "label": "Termal Fiş Motoru",
+      "sublabel": "Slip Baskı (ESC/POS)",
+      "pos": [720, 140],
+      "size": [150, 60]
+    },
+    {
+      "id": "storage",
+      "type": "database",
+      "label": "Yerel Veri Katmanı",
+      "sublabel": "LocalStorage / Güvenli State",
+      "pos": [720, 380],
+      "size": [150, 60]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Bademcioğlu Takip Platformu (Next.js & React Client Engine)",
+      "wraps": ["auth", "nextjs", "sut_modul", "yogurt_modul", "gider_modul", "receipt_engine", "storage"]
+    }
+  ],
+  "connections": [
+    {
+      "id": "c-auth",
+      "from": "client",
+      "to": "auth",
+      "variant": "security",
+      "fromSide": "top",
+      "toSide": "left"
+    },
+    {
+      "id": "c-next",
+      "from": "client",
+      "to": "nextjs",
+      "variant": "emphasis"
+    },
+    {
+      "id": "next-sut",
+      "from": "nextjs",
+      "to": "sut_modul",
+      "fromSide": "top",
+      "toSide": "left"
+    },
+    {
+      "id": "next-yogurt",
+      "from": "nextjs",
+      "to": "yogurt_modul"
+    },
+    {
+      "id": "next-gider",
+      "from": "nextjs",
+      "to": "gider_modul",
+      "fromSide": "bottom",
+      "toSide": "left"
+    },
+    {
+      "id": "sut-store",
+      "from": "sut_modul",
+      "to": "storage",
+      "fromSide": "right",
+      "toSide": "top"
+    },
+    {
+      "id": "yogurt-receipt",
+      "from": "yogurt_modul",
+      "to": "receipt_engine",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "yogurt-store",
+      "from": "yogurt_modul",
+      "to": "storage"
+    },
+    {
+      "id": "gider-store",
+      "from": "gider_modul",
+      "to": "storage",
+      "fromSide": "right",
+      "toSide": "bottom"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "amber",
+      "title": "Süt Alım & Müstahsil Yönetimi",
+      "items": [
+        "Müstahsil bazında sabah/akşam süt tartımı ve kaydı",
+        "Dinamik birim fiyat çarpanı ve otomatik bakiye hesabı",
+        "Geçmiş dönem hesap dökümü ve müstahsil ödeme takibi"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Yoğurt Üretim, Dağıtım & Veresiye",
+      "items": [
+        "Büyük kova (3 kg) ve Küçük kova (1.5 kg) dağıtım yönetimi",
+        "Boş kova iadesi ve bozuk yoğurt zayiat mahsuplaşması",
+        "Peşin, Kısmi Ödeme ve Açık Veresiye bakiye takibi",
+        "58mm/80mm termal slip fiş yazdırma desteği"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Güvenlik & Mimari Altyapı",
+      "items": [
+        "Ortam değişkenleri (.env.local & Vercel) ile tam kimlik koruması",
+        "Kademeli Brute-Force engelleme ve üstel bekleme süresi",
+        "Tam mobil uyumlu arayüz ve çift tema (Koyu Obsidian / Aydınlık)"
+      ]
+    }
+  ]
+}
