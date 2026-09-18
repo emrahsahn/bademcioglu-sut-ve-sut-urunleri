@@ -1,16 +1,43 @@
 "use client";
 
-import React from "react";
-import { usePathname } from "next/navigation";
+import React, { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import MobileNav from "@/components/MobileNav";
+import { useAuth } from "@/context/AuthContext";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuth();
   const isLoginPage = pathname === "/login";
 
+  // Kimlik doğrulaması yapılmamışsa doğrudan /login sayfasına yönlendir
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated && !isLoginPage) {
+      router.replace("/login");
+    }
+  }, [isAuthenticated, isLoading, isLoginPage, router]);
+
+  // Login sayfası ise sidebar/mobilenav olmadan tam ekran göster
   if (isLoginPage) {
-    return <main className="min-h-screen bg-slate-50 dark:bg-[#090D14] text-slate-900 dark:text-slate-100 transition-colors duration-300">{children}</main>;
+    return (
+      <main className="min-h-screen bg-slate-50 dark:bg-[#090D14] text-slate-900 dark:text-slate-100 transition-colors duration-300">
+        {children}
+      </main>
+    );
+  }
+
+  // Oturum durumu henüz yükleniyorsa veya kullanıcı giriş yapmamışsa yükleme ekranı göster
+  if (isLoading || !isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#090D14] text-slate-500 dark:text-slate-400">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-3 border-amber-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-semibold">Oturum Kontrol Ediliyor...</span>
+        </div>
+      </div>
+    );
   }
 
   return (

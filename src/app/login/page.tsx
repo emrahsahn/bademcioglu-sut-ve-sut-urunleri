@@ -14,9 +14,16 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  const { login, securityState } = useAuth();
+  const { login, securityState, isAuthenticated, isLoading } = useAuth();
   const { success, error } = useToast();
   const router = useRouter();
+
+  // Zaten giriş yapmışsa ana sayfaya yönlendir
+  React.useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      router.replace("/");
+    }
+  }, [isAuthenticated, isLoading, router]);
 
   const isLocked = securityState.isLocked;
 

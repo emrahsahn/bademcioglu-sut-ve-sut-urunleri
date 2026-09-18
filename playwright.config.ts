@@ -1,4 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
+import { loadEnvConfig } from "@next/env";
+
+// Ortam değişkenlerini (.env.local) test ortamına yükle
+loadEnvConfig(process.cwd());
 
 export default defineConfig({
   testDir: "./tests",
