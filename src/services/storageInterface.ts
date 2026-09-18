@@ -9,7 +9,9 @@ import {
   Gider,
   GiderKategoriItem,
   SistemYedegi,
+  AylikIstatistikKapanis,
 } from "../types/database";
+
 
 export interface IDataService {
   // Müstahsil İşlemleri
@@ -60,8 +62,15 @@ export interface IDataService {
   // İstatistik / Özet
   getDashboardOzet(): Promise<DashboardOzet>;
 
+  // Aylık İstatistik Dönem Kapanışları & Arşiv
+  getAylikKapanislar(): Promise<AylikIstatistikKapanis[]>;
+  createAylikKapanis(data: Omit<AylikIstatistikKapanis, "id" | "olusturma_zamani">): Promise<AylikIstatistikKapanis>;
+  deleteAylikKapanis(id: string): Promise<boolean>;
+  getSonKapanisTarihi(): Promise<string | null>;
+
   // Yedekleme & Geri Yükleme
   exportSistemYedegi(): Promise<SistemYedegi>;
   importSistemYedegi(yedek: SistemYedegi): Promise<boolean>;
 }
+
 

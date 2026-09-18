@@ -32,12 +32,6 @@ export default function EskiKayitlarTab({
   // Seçili Tarih
   const [selectedTarih, setSelectedTarih] = useState<string>(getTodayDateString());
 
-  // Ödeme Düzenleme Modalı State
-  const [editTarget, setEditTarget] = useState<YogurtDagitim | null>(null);
-  const [editOdemeDurumu, setEditOdemeDurumu] = useState<OdemeDurumu>("odendi");
-  const [editOdenenTutar, setEditOdenenTutar] = useState<string>("0");
-  const [isUpdatingPayment, setIsUpdatingPayment] = useState(false);
-
   // Geriye Dönük Satış Ekleme Modalı State
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [addMusteriId, setAddMusteriId] = useState<string>("");
@@ -64,47 +58,6 @@ export default function EskiKayitlarTab({
     setSelectedTarih(d.toISOString().split("T")[0]);
   };
 
-  // Ödeme Düzenleme Başlat
-  const handleOpenEditPayment = (d: YogurtDagitim) => {
-    setEditTarget(d);
-    setEditOdemeDurumu(d.odeme_durumu);
-    setEditOdenenTutar((d.odenen_tutar || 0).toString());
-  };
-
-  // Ödeme Düzenlemeyi Kaydet
-  const handleSavePayment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editTarget) return;
-
-    const top = editTarget.toplam_tutar;
-    let odenen = 0;
-    if (editOdemeDurumu === "odendi") {
-      odenen = top;
-    } else if (editOdemeDurumu === "odenmedi") {
-      odenen = 0;
-    } else {
-      odenen = parseFloat(editOdenenTutar.replace(",", ".")) || 0;
-    }
-
-    const kalan = Math.max(0, top - odenen);
-
-    try {
-      setIsUpdatingPayment(true);
-      await dataService.updateYogurtDagitim(editTarget.id, {
-        odeme_durumu: editOdemeDurumu,
-        odenen_tutar: odenen,
-        kalan_tutar: kalan,
-      });
-
-      success("Ödeme durumu ve veresiye bakiyesi güncellendi.");
-      setEditTarget(null);
-      await onRefresh();
-    } catch (err) {
-      error("Ödeme güncellenirken hata oluştu.");
-    } finally {
-      setIsUpdatingPayment(false);
-    }
-  };
 
   // Geçmiş Tarihe Yeni Satış Hesapla
   const calculateAddTotal = () => {
@@ -353,11 +306,10 @@ export default function EskiKayitlarTab({
                 {gunKayitlari.map((d) => (
                   <tr
                     key={d.id}
-                    className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group cursor-pointer"
-                    onClick={() => handleOpenEditPayment(d)}
+                    className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group"
                   >
                     <td className="py-3.5 px-4 font-black text-slate-900 dark:text-white">
-                      <span className="group-hover:text-amber-800 dark:group-hover:text-amber-300 transition-colors block text-xs">
+                      <span className="block text-xs">
                         {d.musteri_adi}
                       </span>
                       {d.fatura_kesildi && (
@@ -423,7 +375,7 @@ export default function EskiKayitlarTab({
                       )}
                     </td>
 
-                    <td className="py-3.5 px-4 text-right" onClick={(e) => e.stopPropagation()}>
+                    <td className="py-3.5 px-4 text-right">
                       <button
                         onClick={() => setDeleteTargetId(d.id)}
                         className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-slate-500 dark:text-slate-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors"
@@ -440,93 +392,6 @@ export default function EskiKayitlarTab({
         )}
       </div>
 
-      {/* Ödeme Durumu Düzenleme Modalı */}
-      <Modal
-        isOpen={!!editTarget}
-        onClose={() => setEditTarget(null)}
-        title={`${editTarget?.musteri_adi} - Ödeme Durumu Düzenle`}
-        description="Satışın tahsilat durumunu ve alınan tutarı güncelleyin"
-      >
-        <form onSubmit={handleSavePayment} className="space-y-4">
-          <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex justify-between items-center text-xs">
-            <span className="text-slate-700 dark:text-slate-300 font-bold">Toplam Tutar:</span>
-            <span className="font-black text-amber-800 dark:text-amber-300 text-sm num-mono">
-              {formatCurrency(editTarget?.toplam_tutar || 0)}
-            </span>
-          </div>
-
-          <div className="space-y-2">
-            <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">Yeni Ödeme Durumu</label>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => setEditOdemeDurumu("odendi")}
-                className={`py-2 rounded-xl text-xs font-black transition-all tactile-btn ${
-                  editOdemeDurumu === "odendi"
-                    ? "bg-emerald-600 text-white shadow-md ring-2 ring-emerald-400"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700"
-                }`}
-              >
-                ✓ Ödendi
-              </button>
-              <button
-                type="button"
-                onClick={() => setEditOdemeDurumu("odenmedi")}
-                className={`py-2 rounded-xl text-xs font-black transition-all tactile-btn ${
-                  editOdemeDurumu === "odenmedi"
-                    ? "bg-rose-600 text-white shadow-md ring-2 ring-rose-400"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700"
-                }`}
-              >
-                ✕ Ödenmedi
-              </button>
-              <button
-                type="button"
-                onClick={() => setEditOdemeDurumu("kismi")}
-                className={`py-2 rounded-xl text-xs font-black transition-all tactile-btn ${
-                  editOdemeDurumu === "kismi"
-                    ? "bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700"
-                }`}
-              >
-                ◈ Kısmi
-              </button>
-            </div>
-          </div>
-
-          {editOdemeDurumu === "kismi" && (
-            <div className="space-y-1.5 pt-2">
-              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">Tahsil Edilen Tutar (TL)</label>
-              <input
-                type="number"
-                step="any"
-                min="0"
-                max={editTarget?.toplam_tutar || 0}
-                value={editOdenenTutar}
-                onChange={(e) => setEditOdenenTutar(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-amber-500 text-slate-900 dark:text-white text-xs font-black outline-none num-mono shadow-sm"
-              />
-            </div>
-          )}
-
-          <div className="flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
-            <button
-              type="button"
-              onClick={() => setEditTarget(null)}
-              className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 tactile-btn"
-            >
-              Vazgeç
-            </button>
-            <button
-              type="submit"
-              disabled={isUpdatingPayment}
-              className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 text-xs font-black shadow-md transition-all tactile-btn"
-            >
-              {isUpdatingPayment ? "Güncelleniyor..." : "Ödemeyi Güncelle"}
-            </button>
-          </div>
-        </form>
-      </Modal>
 
       {/* Geçmiş Güne Satış Ekleme Modal */}
       <Modal
@@ -534,17 +399,20 @@ export default function EskiKayitlarTab({
         onClose={() => setIsAddOpen(false)}
         title={`${formatDate(selectedTarih)} Tarihine Satış Ekle`}
         description="Geçmiş tarihe geriye dönük yoğurt teslimat kaydı oluşturun"
+        maxWidth="2xl"
       >
-        <form onSubmit={handleSaveAddHistorySale} className="space-y-4">
+        <form onSubmit={handleSaveAddHistorySale} className="space-y-5">
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">Müşteri Seçin</label>
+            <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
+              Müşteri Seçin <span className="text-amber-600">*</span>
+            </label>
             <select
               value={addMusteriId}
               onChange={(e) => {
                 setAddMusteriId(e.target.value);
                 setTimeout(calculateAddTotal, 0);
               }}
-              className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-bold outline-none focus:border-amber-500"
+              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-bold outline-none focus:border-amber-500 shadow-sm"
             >
               {musteriler.map((m) => (
                 <option key={m.id} value={m.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
@@ -566,7 +434,7 @@ export default function EskiKayitlarTab({
                   setAddBuyukAdet(e.target.value);
                   setTimeout(calculateAddTotal, 0);
                 }}
-                className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-bold outline-none focus:border-amber-500 num-mono shadow-sm"
+                className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-bold outline-none focus:border-amber-500 num-mono shadow-sm"
               />
             </div>
             <div className="space-y-1.5">
@@ -580,18 +448,18 @@ export default function EskiKayitlarTab({
                   setAddKucukAdet(e.target.value);
                   setTimeout(calculateAddTotal, 0);
                 }}
-                className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-bold outline-none focus:border-amber-500 num-mono shadow-sm"
+                className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-bold outline-none focus:border-amber-500 num-mono shadow-sm"
               />
             </div>
           </div>
 
-          <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 space-y-2.5">
-            <span className="text-[11px] font-black text-rose-800 dark:text-rose-300 uppercase block">
+          <div className="p-4 rounded-2xl bg-rose-50/60 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/60 space-y-2.5">
+            <span className="text-[11px] font-black text-rose-800 dark:text-rose-300 uppercase block tracking-wider">
               İadeler & Boş Kova
             </span>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300">Boş Kova</label>
+                <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300 mb-1">Boş Kova</label>
                 <input
                   type="number"
                   min="0"
@@ -601,11 +469,11 @@ export default function EskiKayitlarTab({
                     setAddIadeKova(e.target.value);
                     setTimeout(calculateAddTotal, 0);
                   }}
-                  className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-400 text-xs font-bold outline-none num-mono shadow-sm"
+                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-400 text-xs font-bold outline-none num-mono shadow-sm"
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300">İade Büyük</label>
+                <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300 mb-1">İade Büyük</label>
                 <input
                   type="number"
                   min="0"
@@ -615,11 +483,11 @@ export default function EskiKayitlarTab({
                     setAddIadeBuyuk(e.target.value);
                     setTimeout(calculateAddTotal, 0);
                   }}
-                  className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-400 text-xs font-bold outline-none num-mono shadow-sm"
+                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-400 text-xs font-bold outline-none num-mono shadow-sm"
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300">İade Küçük</label>
+                <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300 mb-1">İade Küçük</label>
                 <input
                   type="number"
                   min="0"
@@ -629,31 +497,99 @@ export default function EskiKayitlarTab({
                     setAddIadeKucuk(e.target.value);
                     setTimeout(calculateAddTotal, 0);
                   }}
-                  className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-400 text-xs font-bold outline-none num-mono shadow-sm"
+                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-400 text-xs font-bold outline-none num-mono shadow-sm"
                 />
               </div>
             </div>
           </div>
 
-          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Hesaplanan Tutar:</span>
-            <span className="text-base font-black text-amber-800 dark:text-amber-300 num-mono">
+          {/* Hesaplanan Net Tutar */}
+          <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex items-center justify-between shadow-sm">
+            <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Hesaplanan Toplam Tutar:</span>
+            <span className="text-xl font-black text-amber-800 dark:text-amber-300 num-mono">
               {formatCurrency(parseFloat(addToplamTutar) || 0)}
             </span>
           </div>
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
+          {/* Ödeme Durumu Seçimi */}
+          <div className="space-y-2">
+            <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">Ödeme Durumu</label>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setAddOdemeDurumu("odendi");
+                  setAddOdenenTutar(addToplamTutar);
+                }}
+                className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all ${
+                  addOdemeDurumu === "odendi"
+                    ? "bg-emerald-500 text-white border-emerald-600 shadow-sm"
+                    : "bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                }`}
+              >
+                Tam Ödendi
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAddOdemeDurumu("kismi");
+                  setAddOdenenTutar("");
+                }}
+                className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all ${
+                  addOdemeDurumu === "kismi"
+                    ? "bg-amber-500 text-slate-950 border-amber-600 shadow-sm"
+                    : "bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                }`}
+              >
+                Kısmi Ödeme
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAddOdemeDurumu("odenmedi");
+                  setAddOdenenTutar("0");
+                }}
+                className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all ${
+                  addOdemeDurumu === "odenmedi"
+                    ? "bg-rose-500 text-white border-rose-600 shadow-sm"
+                    : "bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                }`}
+              >
+                Ödenmedi
+              </button>
+            </div>
+          </div>
+
+          {addOdemeDurumu === "kismi" && (
+            <div className="space-y-1.5 p-3.5 rounded-xl bg-amber-50/50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+              <label className="block text-xs font-bold text-amber-950 dark:text-amber-300">
+                Tahsil Edilen Peşinat (TL)
+              </label>
+              <input
+                type="number"
+                step="any"
+                min="0"
+                max={parseFloat(addToplamTutar) || 0}
+                value={addOdenenTutar}
+                onChange={(e) => setAddOdenenTutar(e.target.value)}
+                placeholder="0.00"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-sm font-mono font-bold text-slate-900 dark:text-white outline-none focus:border-amber-500"
+              />
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
             <button
               type="button"
               onClick={() => setIsAddOpen(false)}
-              className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              className="px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
             >
               Vazgeç
             </button>
             <button
               type="submit"
               disabled={isAddingHistorySale}
-              className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-black shadow transition-all tactile-btn"
+              className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-black shadow-md transition-all tactile-btn disabled:opacity-50"
             >
               {isAddingHistorySale ? "Ekleniyor..." : "Satışı Kaydet"}
             </button>

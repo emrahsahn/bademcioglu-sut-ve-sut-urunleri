@@ -419,6 +419,7 @@ export default function MusteriEkleTab({ musteriler, onRefresh }: MusteriEkleTab
         onClose={() => setEditMusteri(null)}
         title={`${editMusteri?.ad} - Bilgileri Düzenle`}
         description="Müşteri adını, iletişim adresini ve kova birim fiyatlarını güncelleyin"
+        maxWidth="xl"
       >
         <form onSubmit={handleUpdateMusteri} className="space-y-4">
           <div className="space-y-1.5">

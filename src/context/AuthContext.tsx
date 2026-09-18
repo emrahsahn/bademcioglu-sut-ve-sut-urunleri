@@ -3,6 +3,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
+import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
+
 export interface AuthUser {
   username: string;
   name: string;
@@ -199,51 +201,97 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Timing attack ve bot hızını yavaşlatmak için yapay güvenlik gecikmesi (300ms)
     await new Promise((resolve) => setTimeout(resolve, 300));
 
-    // .env ortam değişkenlerinden yönetici kimlik bilgilerini oku
-    const envUsername = process.env.NEXT_PUBLIC_ADMIN_USERNAME;
-    const envPin = process.env.NEXT_PUBLIC_ADMIN_PIN;
+    let authUserResult: AuthUser | null = null;
 
-    if (!envUsername || !envPin) {
-      return {
-        success: false,
-        error: "Yönetici kimlik bilgileri ortam değişkenlerinde (.env) tanımlı değil. Lütfen sistem yöneticinizle görüşün.",
-      };
-    }
+    // 2. SUPABASE VERİTABANI KONTROLÜ
+    if (isSupabaseConfigured()) {
+      try {
+        const { data: dbUser, error: dbError } = await supabase
+          .from("kullanicilar")
+          .select("*")
+          .ilike("kullanici_adi", cleanUser)
+          .eq("aktif", true)
+          .maybeSingle();
 
-    // KESİN YETKİLENDİRME KONTROLÜ
-    const isUserValid = cleanUser.toLowerCase() === envUsername.toLowerCase();
-    const isPinValid = cleanPin === envPin;
+        if (dbError) {
+          console.error("Supabase auth error:", dbError);
+          return {
+            success: false,
+            error: "Veritabanına bağlanırken hata oluştu. Lütfen bağlantınızı kontrol edin.",
+          };
+        }
 
-    if (!isUserValid || !isPinValid) {
-      const { isLockedNow, durationSeconds } = recordFailedAttempt();
+        if (!dbUser || dbUser.sifre !== cleanPin) {
+          const { isLockedNow, durationSeconds } = recordFailedAttempt();
+          if (isLockedNow) {
+            return {
+              success: false,
+              error: `Hatalı kullanıcı adı veya şifre! Lütfen ${durationSeconds} saniye bekleyiniz.`,
+            };
+          }
+          const remainingAttempts = MAX_FREE_ATTEMPTS - (failedAttempts + 1);
+          return {
+            success: false,
+            error: `Hatalı kullanıcı adı veya şifre! (Kalan deneme hakkı: ${remainingAttempts})`,
+          };
+        }
 
-      if (isLockedNow) {
+        authUserResult = {
+          username: dbUser.kullanici_adi,
+          name: dbUser.ad_soyad || dbUser.kullanici_adi,
+          role: dbUser.rol || "Yönetici",
+        };
+      } catch (err) {
+        console.error("Auth request error:", err);
         return {
           success: false,
-          error: `Hatalı kullanıcı adı veya şifre! Lütfen ${durationSeconds} saniye bekleyiniz.`,
+          error: "Giriş işlemi sırasında beklenmeyen bir hata oluştu.",
+        };
+      }
+    } else {
+      // Supabase yapılandırılmamışsa (.env.local fallback)
+      const envUsername = process.env.NEXT_PUBLIC_ADMIN_USERNAME;
+      const envPin = process.env.NEXT_PUBLIC_ADMIN_PIN;
+
+      if (!envUsername || !envPin) {
+        return {
+          success: false,
+          error: "Yönetici kimlik bilgileri tanımlı değil.",
         };
       }
 
-      const remainingAttempts = MAX_FREE_ATTEMPTS - (failedAttempts + 1);
-      return {
-        success: false,
-        error: `Hatalı kullanıcı adı veya şifre! (Kalan deneme hakkı: ${remainingAttempts})`,
+      const isUserValid = cleanUser.toLowerCase() === envUsername.toLowerCase();
+      const isPinValid = cleanPin === envPin;
+
+      if (!isUserValid || !isPinValid) {
+        const { isLockedNow, durationSeconds } = recordFailedAttempt();
+        if (isLockedNow) {
+          return {
+            success: false,
+            error: `Hatalı kullanıcı adı veya şifre! Lütfen ${durationSeconds} saniye bekleyiniz.`,
+          };
+        }
+        const remainingAttempts = MAX_FREE_ATTEMPTS - (failedAttempts + 1);
+        return {
+          success: false,
+          error: `Hatalı kullanıcı adı veya şifre! (Kalan deneme hakkı: ${remainingAttempts})`,
+        };
+      }
+
+      authUserResult = {
+        username: cleanUser,
+        name: "Sistem Yöneticisi",
+        role: "Yönetici",
       };
     }
 
     // Başarılı giriş: Güvenlik sayacını sıfırla
     clearSecurityState();
 
-    const authData: AuthUser = {
-      username: cleanUser,
-      name: "Sistem Yöneticisi",
-      role: "Yönetici",
-    };
-
-    setUser(authData);
+    setUser(authUserResult);
     if (rememberMe) {
       try {
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authData));
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUserResult));
       } catch (err) {
         console.error("Storage error", err);
       }
@@ -251,6 +299,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return { success: true };
   };
+
 
   const logout = () => {
     setUser(null);

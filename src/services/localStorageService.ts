@@ -9,6 +9,7 @@ import {
   Gider,
   GiderKategoriItem,
   SistemYedegi,
+  AylikIstatistikKapanis,
 } from "../types/database";
 import { IDataService } from "./storageInterface";
 
@@ -21,7 +22,9 @@ const STORAGE_KEYS = {
   YOGURT_URETIMLERI: "sut_defteri_yogurt_uretimleri",
   GIDER_KATEGORILERI: "sut_defteri_gider_kategorileri",
   GIDERLER: "sut_defteri_giderler",
+  AYLIK_KAPANISLAR: "sut_defteri_aylik_kapanislar",
 };
+
 
 // Başlangıç için örnek mock veriler
 const DEFAULT_MUSTAHSILLER: Mustahsil[] = [
@@ -574,6 +577,38 @@ class LocalStorageService implements IDataService {
     };
   }
 
+  // --- Aylık İstatistik Kapanışları & Dönem Arşivi ---
+  async getAylikKapanislar(): Promise<AylikIstatistikKapanis[]> {
+    const list = this.getItem<AylikIstatistikKapanis[]>(STORAGE_KEYS.AYLIK_KAPANISLAR, []);
+    return list.sort((a, b) => (a.kapanis_tarihi > b.kapanis_tarihi ? -1 : 1));
+  }
+
+  async createAylikKapanis(
+    data: Omit<AylikIstatistikKapanis, "id" | "olusturma_zamani">
+  ): Promise<AylikIstatistikKapanis> {
+    const list = this.getItem<AylikIstatistikKapanis[]>(STORAGE_KEYS.AYLIK_KAPANISLAR, []);
+    const newRecord: AylikIstatistikKapanis = {
+      ...data,
+      id: "ak-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7),
+      olusturma_zamani: new Date().toISOString(),
+    };
+    list.unshift(newRecord);
+    this.setItem(STORAGE_KEYS.AYLIK_KAPANISLAR, list);
+    return newRecord;
+  }
+
+  async deleteAylikKapanis(id: string): Promise<boolean> {
+    let list = this.getItem<AylikIstatistikKapanis[]>(STORAGE_KEYS.AYLIK_KAPANISLAR, []);
+    list = list.filter((k) => k.id !== id);
+    this.setItem(STORAGE_KEYS.AYLIK_KAPANISLAR, list);
+    return true;
+  }
+
+  async getSonKapanisTarihi(): Promise<string | null> {
+    const list = await this.getAylikKapanislar();
+    return list.length > 0 ? list[0].kapanis_tarihi : null;
+  }
+
   // --- Yedekleme & Geri Yükleme ---
   async exportSistemYedegi(): Promise<SistemYedegi> {
     return {
@@ -587,6 +622,7 @@ class LocalStorageService implements IDataService {
       yogurt_uretimleri: await this.getYogurtUretimleri(),
       gider_kategorileri: await this.getGiderKategorileri(),
       giderler: await this.getGiderler(),
+      aylik_kapanislar: await this.getAylikKapanislar(),
     };
   }
 
@@ -603,9 +639,11 @@ class LocalStorageService implements IDataService {
       if (yedek.yogurt_uretimleri) this.setItem(STORAGE_KEYS.YOGURT_URETIMLERI, yedek.yogurt_uretimleri);
       if (yedek.gider_kategorileri) this.setItem(STORAGE_KEYS.GIDER_KATEGORILERI, yedek.gider_kategorileri);
       if (yedek.giderler) this.setItem(STORAGE_KEYS.GIDERLER, yedek.giderler);
+      if (yedek.aylik_kapanislar) this.setItem(STORAGE_KEYS.AYLIK_KAPANISLAR, yedek.aylik_kapanislar);
     }
     return true;
   }
 }
 
 export const localStorageService = new LocalStorageService();
+

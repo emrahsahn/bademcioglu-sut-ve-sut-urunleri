@@ -128,4 +128,38 @@ export interface SistemYedegi {
   yogurt_uretimleri?: YogurtUretim[];
   gider_kategorileri?: GiderKategoriItem[];
   giderler: Gider[];
+  aylik_kapanislar?: AylikIstatistikKapanis[];
 }
+
+// --- Kullanıcı & Yetki Tipleri ---
+export interface Kullanici {
+  id: string;
+  kullanici_adi: string;
+  sifre: string;
+  ad_soyad: string;
+  rol: string;
+  aktif: boolean;
+  olusturma_tarihi?: string;
+}
+
+// --- Aylık İstatistik & Dönem Kapanış Tipleri ---
+export interface AylikIstatistikKapanis {
+  id: string;
+  donem_adi: string;             // Örn: "Eylül 2026" veya "2026-09"
+  baslangic_tarihi: string;      // YYYY-MM-DD
+  kapanis_tarihi: string;        // ISO String
+  toplam_yogurt_ciro: number;    // TL
+  toplam_yogurt_tahsilat: number;// TL
+  toplam_veresiye_alacak: number;// TL
+  toplam_sut_kg: number;         // Kg
+  toplam_sut_maliyeti: number;   // TL
+  toplam_gider: number;          // TL
+  net_kar_zarar: number;         // TL (Ciro - Süt Maliyeti - Giderler)
+  teslimat_sayisi: number;
+  gider_sayisi: number;
+  notlar?: string;
+  detay_json?: Record<string, unknown>;
+  olusturma_zamani: string;
+}
+
+

@@ -676,6 +676,7 @@ export default function DagitilacaklarTab({
         onClose={() => setIsCustomerHistoryOpen(false)}
         title={`${selectedMusteri?.ad || "Müşteri"} - Geçmiş Teslimat Kayıtları`}
         description="Tarih bazında alınan yoğurtlar, iadeler ve tahsilat hareketleri"
+        maxWidth="2xl"
       >
         <div className="space-y-3">
           {selectedMusteriKayitlari.length === 0 ? (
