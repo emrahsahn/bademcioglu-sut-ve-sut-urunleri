@@ -18,6 +18,7 @@ import {
   ArrowRight,
   Sparkles,
   Layers,
+  Phone,
 } from "lucide-react";
 
 interface VeresiyeSatislarTabProps {
@@ -294,6 +295,19 @@ export default function VeresiyeSatislarTab({
               <span className="text-3xl font-black text-rose-700 dark:text-rose-400 num-mono mt-0.5 block">
                 {formatCurrency(currentActiveMusteri?.bakiye || 0)}
               </span>
+              {currentActiveMusteri?.telefon && (
+                <div className="mt-2.5">
+                  <a
+                    href={`tel:${currentActiveMusteri.telefon.replace(/[^0-9+]/g, "")}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 shadow-sm active:scale-95 transition-all"
+                    title={`${currentActiveMusteri.ad} Ara`}
+                  >
+                    <Phone className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <span>{currentActiveMusteri.telefon}</span>
+                    <span className="text-[10px] bg-emerald-600 text-white font-black px-1.5 py-0.2 rounded ml-1">Ara</span>
+                  </a>
+                </div>
+              )}
             </div>
 
             {(currentActiveMusteri?.bakiye || 0) > 0 && (

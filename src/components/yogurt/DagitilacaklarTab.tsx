@@ -17,6 +17,7 @@ import {
   FileCheck,
   RotateCcw,
   Package,
+  Phone,
 } from "lucide-react";
 
 interface DagitilacaklarTabProps {
@@ -321,22 +322,40 @@ export default function DagitilacaklarTab({
         <div className="bento-card bg-white dark:bg-[#101726] border border-slate-200 dark:border-slate-800 p-5 space-y-5">
           {/* Müşteri Başlığı & Tarih */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800 gap-3">
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-black text-slate-900 dark:text-white">{selectedMusteri.ad}</h2>
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">{selectedMusteri.ad}</h2>
                 <span className="text-[11px] bg-amber-100 dark:bg-amber-950/50 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-700/50 font-extrabold px-2 py-0.5 rounded-lg">
                   Seçili Nokta
                 </span>
               </div>
-              <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5 font-medium">
-                {selectedMusteri.telefon || "Telefon kayıtlı değil"} • Güncel Bakiye:{" "}
-                <strong className="text-rose-600 dark:text-rose-400 font-black num-mono">
-                  {formatCurrency(selectedMusteri.bakiye || 0)}
-                </strong>
-              </p>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-600 dark:text-slate-400 font-medium pt-0.5">
+                {selectedMusteri.telefon ? (
+                  <a
+                    href={`tel:${selectedMusteri.telefon.replace(/[^0-9+]/g, "")}`}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-black shadow-md shadow-emerald-600/20 transition-all tactile-btn group cursor-pointer"
+                    title={`${selectedMusteri.ad} Ara`}
+                  >
+                    <Phone className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                    <span className="tracking-wide">{selectedMusteri.telefon}</span>
+                    <span className="bg-emerald-950/40 text-emerald-100 text-[10px] font-black px-1.5 py-0.5 rounded ml-0.5 uppercase tracking-wider">
+                      Ara
+                    </span>
+                  </a>
+                ) : (
+                  <span className="text-slate-400 italic">Telefon kayıtlı değil</span>
+                )}
+                <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">•</span>
+                <span>
+                  Güncel Bakiye:{" "}
+                  <strong className="text-rose-600 dark:text-rose-400 font-black num-mono text-sm">
+                    {formatCurrency(selectedMusteri.bakiye || 0)}
+                  </strong>
+                </span>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 px-3 py-1.5 rounded-xl">
+            <div className="flex items-center gap-2 self-start sm:self-auto bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 px-3 py-1.5 rounded-xl">
               <Calendar className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               <input
                 type="date"
@@ -678,7 +697,28 @@ export default function DagitilacaklarTab({
         description="Tarih bazında alınan yoğurtlar, iadeler ve tahsilat hareketleri"
         maxWidth="2xl"
       >
-        <div className="space-y-3">
+        <div className="space-y-4">
+          {selectedMusteri && (
+            <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div>
+                <span className="text-[10px] uppercase font-black text-slate-500 dark:text-slate-400 block tracking-wider">Müşteri</span>
+                <h4 className="text-sm font-black text-slate-900 dark:text-white">{selectedMusteri.ad}</h4>
+              </div>
+              {selectedMusteri.telefon ? (
+                <a
+                  href={`tel:${selectedMusteri.telefon.replace(/[^0-9+]/g, "")}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold shadow-sm transition-all"
+                  title={`${selectedMusteri.ad} Ara`}
+                >
+                  <Phone className="w-3.5 h-3.5" />
+                  <span>{selectedMusteri.telefon}</span>
+                  <span className="text-[10px] bg-emerald-950/40 px-1.5 py-0.2 rounded font-black uppercase">Ara</span>
+                </a>
+              ) : (
+                <span className="text-slate-400 italic text-xs">Telefon kayıtlı değil</span>
+              )}
+            </div>
+          )}
           {selectedMusteriKayitlari.length === 0 ? (
             <div className="py-8 text-center text-slate-500 dark:text-slate-400">
               <p className="text-xs">Bu müşteriye ait henüz geçmiş teslimat kaydı bulunmuyor.</p>

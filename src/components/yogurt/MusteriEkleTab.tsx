@@ -362,9 +362,20 @@ export default function MusteriEkleTab({ musteriler, onRefresh }: MusteriEkleTab
                       <span>{m.ad}</span>
                     </td>
                     <td className="py-3.5 px-4 text-slate-600 dark:text-slate-400">
-                      <div>{m.telefon || "—"}</div>
+                      {m.telefon ? (
+                        <a
+                          href={`tel:${m.telefon.replace(/[^0-9+]/g, "")}`}
+                          className="inline-flex items-center gap-1.5 font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 hover:underline transition-colors"
+                          title={`${m.ad} Ara`}
+                        >
+                          <Phone className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <span>{m.telefon}</span>
+                        </a>
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
                       {m.adres && (
-                        <div className="text-[11px] text-slate-400 truncate max-w-xs">
+                        <div className="text-[11px] text-slate-400 truncate max-w-xs mt-0.5">
                           {m.adres}
                         </div>
                       )}

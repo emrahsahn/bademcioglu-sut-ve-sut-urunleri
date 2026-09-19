@@ -22,6 +22,7 @@ import {
   AlertCircle,
   Layers,
   Sparkles,
+  Phone,
 } from "lucide-react";
 
 export default function SutGirisiPage() {
@@ -335,6 +336,19 @@ export default function SutGirisiPage() {
                 <h4 className="font-bold text-slate-900 dark:text-white text-sm">
                   {selectedMustahsil.ad}
                 </h4>
+                {selectedMustahsil.telefon && (
+                  <div className="mt-1">
+                    <a
+                      href={`tel:${selectedMustahsil.telefon.replace(/[^0-9+]/g, "")}`}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700/60 text-xs font-bold hover:underline shadow-sm active:scale-95 transition-all"
+                      title={`${selectedMustahsil.ad} Ara`}
+                    >
+                      <Phone className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-300" />
+                      <span>{selectedMustahsil.telefon}</span>
+                      <span className="text-[10px] bg-emerald-700 text-white font-black px-1.5 py-0.2 rounded ml-1">Ara</span>
+                    </a>
+                  </div>
+                )}
               </div>
               <div className="text-right">
                 <span className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
