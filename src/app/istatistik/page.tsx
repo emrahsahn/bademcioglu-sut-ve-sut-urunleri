@@ -13,7 +13,7 @@ import {
   SistemYedegi,
   AylikIstatistikKapanis,
 } from "@/types/database";
-import { formatCurrency, formatKg, formatDate } from "@/lib/utils";
+import { formatCurrency, formatKg, formatDate, formatDateKey } from "@/lib/utils";
 import { useToast } from "@/components/ui/Toast";
 import Modal from "@/components/ui/Modal";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
@@ -212,7 +212,7 @@ export default function IstatistikPage() {
       setIsSubmittingReset(true);
       const baslangic = sonKapanisTarihi
         ? sonKapanisTarihi.split("T")[0]
-        : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+        : formatDateKey(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
 
       await dataService.createAylikKapanis({
         donem_adi: donemAdi.trim(),

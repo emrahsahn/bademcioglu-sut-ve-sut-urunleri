@@ -161,7 +161,10 @@ CREATE INDEX IF NOT EXISTS idx_aylik_istatistikler_tarih ON public.aylik_istatis
 -- ==============================================================================
 -- 3. GÜVENLİK (ROW LEVEL SECURITY - RLS)
 -- ==============================================================================
--- Uygulama Anon Key ile doğrudan güvenli şekilde çalıştığı için tam yetki politikaları tanımlanır.
+-- Uygulama veri tablolarına anon key ile istemciden doğrudan eriştiği için
+-- iş tablolarına okuma/yazma politikaları tanımlanır.
+-- NOT: Kalıcı ve daha katı güvenlik için veri erişiminin service-role key kullanan
+-- sunucu tarafı API rotalarına taşınması gerekir (şu anki mimaride istemci doğrudan sorgular).
 
 ALTER TABLE public.mustahsiller ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sut_kayitlari ENABLE ROW LEVEL SECURITY;
@@ -208,14 +211,38 @@ BEGIN
     DROP POLICY IF EXISTS "Anon public access for giderler" ON public.giderler;
     CREATE POLICY "Anon public access for giderler" ON public.giderler FOR ALL USING (true) WITH CHECK (true);
 
-    -- kullanicilar
+    -- kullanicilar: Şifrelerin bulunduğu tablo anon erişime TAMAMEN KAPALIDIR.
+    -- Politika tanımlanmaz → anon key ile okuma/yazma yapılamaz.
+    -- Giriş doğrulaması yalnızca aşağıdaki fn_login_check fonksiyonu üzerinden yapılır.
     DROP POLICY IF EXISTS "Anon public access for kullanicilar" ON public.kullanicilar;
-    CREATE POLICY "Anon public access for kullanicilar" ON public.kullanicilar FOR ALL USING (true) WITH CHECK (true);
 
     -- aylik_istatistikler
     DROP POLICY IF EXISTS "Anon public access for aylik_istatistikler" ON public.aylik_istatistikler;
     CREATE POLICY "Anon public access for aylik_istatistikler" ON public.aylik_istatistikler FOR ALL USING (true) WITH CHECK (true);
 END $$;
+
+-- ==============================================================================
+-- 3.1 GİRİŞ DOĞRULAMA FONKSİYONU (RPC)
+-- ==============================================================================
+-- Şifre kontrolünü veritabanı tarafında yapar; sifre sütunu istemciye asla dönmez.
+-- SECURITY DEFINER sayesinde kullanicilar tablosundaki RLS kısıtı bypass edilerek okunur.
+
+CREATE OR REPLACE FUNCTION public.fn_login_check(p_kullanici_adi TEXT, p_sifre TEXT)
+RETURNS TABLE (kullanici_adi TEXT, ad_soyad TEXT, rol TEXT)
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+    SELECT k.kullanici_adi, k.ad_soyad, k.rol
+    FROM public.kullanicilar k
+    WHERE lower(k.kullanici_adi) = lower(p_kullanici_adi)
+      AND k.sifre = p_sifre
+      AND k.aktif = TRUE
+    LIMIT 1;
+$$;
+
+REVOKE ALL ON FUNCTION public.fn_login_check(TEXT, TEXT) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.fn_login_check(TEXT, TEXT) TO anon;
 
 -- ==============================================================================
 -- 4. OTOMATİK CARİ BAKİYE HESAPLAMA TETİKLEYİCİSİ (TRIGGER)
@@ -301,9 +328,11 @@ VALUES
     ('g-2', 'Süt Toplama Aracı Mazot', 'Akaryakıt / Mazot', 1850.00, CURRENT_DATE, 'Haftalık dağıtım mazotu', NOW())
 ON CONFLICT (id) DO NOTHING;
 
--- Varsayılan Yönetici Kullanıcısı (Örnek şablon - Kendi kullanıcı adı ve güçlü şifrenizi belirleyiniz)
+-- Varsayılan Yönetici Kullanıcısı (Şablon - PASİF başlar, giriş yapamaz.
+-- Şifresi bu repo içinde bilindiği için aktif bırakılmaz; kendi kullanıcı adınız ve
+-- güçlü şifrenizle Supabase panelinden yeni kayıt açıp aktif=TRUE yapınız.)
 INSERT INTO public.kullanicilar (id, kullanici_adi, sifre, ad_soyad, rol, aktif)
 VALUES
-    ('usr-admin', 'yonetici_admin', 'GucluSifre.2026!*', 'Sistem Yöneticisi', 'Yönetici', TRUE)
-ON CONFLICT (kullanici_adi) DO NOTHING;
+    ('usr-admin', 'yonetici_admin', 'GucluSifre.2026!*', 'Sistem Yöneticisi', 'Yönetici', FALSE)
+ON CONFLICT (kullanici_adi) DO UPDATE SET aktif = FALSE;
 

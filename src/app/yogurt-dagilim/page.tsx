@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Header from "@/components/Header";
 import { dataService } from "@/services";
+import { getTodayDateString } from "@/lib/utils";
 import { YogurtMusteri, YogurtDagitim } from "@/types/database";
 import { useToast } from "@/components/ui/Toast";
 import DagitilacaklarTab from "@/components/yogurt/DagitilacaklarTab";
@@ -57,7 +58,7 @@ export default function YogurtDagilimPage() {
   const toplamVeresiyeBorc = musteriler.reduce((acc, m) => acc + (m.bakiye || 0), 0);
 
   // Bugünkü dağıtımlar
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = getTodayDateString();
   const bugunkuDagitimlar = dagitimlar.filter((d) => d.tarih === todayStr);
   const bugunToplamKova = bugunkuDagitimlar.reduce(
     (acc, d) => acc + (d.buyuk_adet || 0) + (d.kucuk_adet || 0) + (d.kova_adedi || 0),

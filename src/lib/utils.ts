@@ -53,10 +53,15 @@ export function formatDateTime(dateString: string): string {
   }
 }
 
-export function getTodayDateString(): string {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
+// toISOString() UTC ürettiği için Türkiye saatinde gece yarısı sonrası yanlış güne düşer;
+// tarih anahtarları daima yerel saat bileşenlerinden üretilmeli
+export function formatDateKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+export function getTodayDateString(): string {
+  return formatDateKey(new Date());
 }

@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { YogurtMusteri, YogurtDagitim, OdemeDurumu } from "@/types/database";
 import { dataService } from "@/services";
 import { useToast } from "@/components/ui/Toast";
-import { formatCurrency, formatDate, getTodayDateString } from "@/lib/utils";
+import { formatCurrency, formatDate, getTodayDateString, formatDateKey } from "@/lib/utils";
 import Modal from "@/components/ui/Modal";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import {
@@ -55,7 +55,7 @@ export default function EskiKayitlarTab({
   const handleQuickDate = (daysAgo: number) => {
     const d = new Date();
     d.setDate(d.getDate() - daysAgo);
-    setSelectedTarih(d.toISOString().split("T")[0]);
+    setSelectedTarih(formatDateKey(d));
   };
 
 

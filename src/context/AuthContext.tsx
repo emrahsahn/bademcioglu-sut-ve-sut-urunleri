@@ -206,22 +206,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // 2. SUPABASE VERİTABANI KONTROLÜ
     if (isSupabaseConfigured()) {
       try {
-        const { data: dbUser, error: dbError } = await supabase
-          .from("kullanicilar")
-          .select("*")
-          .ilike("kullanici_adi", cleanUser)
-          .eq("aktif", true)
+        // Şifre doğrulaması sunucu tarafındaki fn_login_check fonksiyonunda yapılır;
+        // sifre sütunu asla istemciye indirilmez
+        let dbUser: { kullanici_adi: string; ad_soyad: string | null; rol: string | null } | null = null;
+
+        const { data: rpcData, error: rpcError } = await supabase
+          .rpc("fn_login_check", { p_kullanici_adi: cleanUser, p_sifre: cleanPin })
           .maybeSingle();
 
-        if (dbError) {
-          console.error("Supabase auth error:", dbError);
+        if (rpcError && rpcError.code === "PGRST202") {
+          // fn_login_check veritabanında henüz yok (güncel schema.sql çalıştırılmamış) — geçici uyumluluk yolu
+          console.warn(
+            "fn_login_check bulunamadı. Güvenli giriş için güncel supabase/schema.sql dosyasını Supabase SQL Editor'de çalıştırın."
+          );
+          const { data: legacyData, error: legacyError } = await supabase
+            .from("kullanicilar")
+            .select("kullanici_adi, ad_soyad, rol, sifre")
+            .ilike("kullanici_adi", cleanUser)
+            .eq("aktif", true)
+            .maybeSingle();
+
+          if (legacyError) {
+            console.error("Supabase auth error:", legacyError);
+            return {
+              success: false,
+              error: "Veritabanına bağlanırken hata oluştu. Lütfen bağlantınızı kontrol edin.",
+            };
+          }
+
+          dbUser = legacyData && legacyData.sifre === cleanPin ? legacyData : null;
+        } else if (rpcError) {
+          console.error("Supabase auth error:", rpcError);
           return {
             success: false,
             error: "Veritabanına bağlanırken hata oluştu. Lütfen bağlantınızı kontrol edin.",
           };
+        } else {
+          dbUser = rpcData as { kullanici_adi: string; ad_soyad: string | null; rol: string | null } | null;
         }
 
-        if (!dbUser || dbUser.sifre !== cleanPin) {
+        if (!dbUser) {
           const { isLockedNow, durationSeconds } = recordFailedAttempt();
           if (isLockedNow) {
             return {

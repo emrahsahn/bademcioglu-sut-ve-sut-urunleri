@@ -14,6 +14,7 @@ import {
 
 import { IDataService } from "./storageInterface";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
+import { getTodayDateString } from "../lib/utils";
 
 export class SupabaseService implements IDataService {
   private checkConfigured() {
@@ -66,7 +67,7 @@ export class SupabaseService implements IDataService {
   async addMustahsil(data: Omit<Mustahsil, "id" | "olusturma_tarihi">): Promise<Mustahsil> {
     this.checkConfigured();
     const newId = "m-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7);
-    const today = new Date().toISOString().split("T")[0];
+    const today = getTodayDateString();
 
     const record: Mustahsil = {
       id: newId,
@@ -220,17 +221,8 @@ export class SupabaseService implements IDataService {
       kayitlar: aktifKayitlar,
     };
 
-    // 1. Hesap Kapama kaydını oluştur
-    const { error: insertError } = await supabase
-      .from("hesap_kapamalar")
-      .insert(yeniKapama);
-
-    if (insertError) {
-      console.error("Supabase hesabiKapat insert error:", insertError);
-      throw new Error(insertError.message);
-    }
-
-    // 2. Aktif süt kayıtlarını kapatılmış olarak güncelle
+    // 1. Önce kayıtları kapat: bu adım başarısız olursa hiçbir şey değişmez,
+    //    bırakılırsa başarısız kapama kaydı yeniden denemede aynı kayıtları iki kez hesaplatırdı
     const aktifIds = aktifKayitlar.map((k) => k.id);
     const { error: updateError } = await supabase
       .from("sut_kayitlari")
@@ -240,6 +232,20 @@ export class SupabaseService implements IDataService {
     if (updateError) {
       console.error("Supabase hesabiKapat update sut_kayitlari error:", updateError);
       throw new Error(updateError.message);
+    }
+
+    // 2. Hesap Kapama kaydını oluştur; başarısız olursa kayıtları aktif haline geri al
+    const { error: insertError } = await supabase
+      .from("hesap_kapamalar")
+      .insert(yeniKapama);
+
+    if (insertError) {
+      console.error("Supabase hesabiKapat insert error:", insertError);
+      await supabase
+        .from("sut_kayitlari")
+        .update({ durum: "aktif", hesap_kapama_id: null })
+        .in("id", aktifIds);
+      throw new Error(insertError.message);
     }
 
     return yeniKapama;
@@ -347,7 +353,7 @@ export class SupabaseService implements IDataService {
   ): Promise<YogurtMusteri> {
     this.checkConfigured();
     const newId = "ym-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7);
-    const today = new Date().toISOString().split("T")[0];
+    const today = getTodayDateString();
 
     const record: YogurtMusteri = {
       id: newId,
@@ -831,7 +837,7 @@ export class SupabaseService implements IDataService {
         this.getGiderler(),
       ]);
 
-    const bugunStr = new Date().toISOString().split("T")[0];
+    const bugunStr = getTodayDateString();
     let toplamKg = 0;
     let toplamTutar = 0;
     let bugunkuKg = 0;
@@ -1001,67 +1007,75 @@ export class SupabaseService implements IDataService {
     }
 
     // Sıralı ve ilişkisel bütünlüğü koruyarak toplu ekleme (Upsert)
+    const failures: string[] = [];
+
     if (yedek.mustahsiller && yedek.mustahsiller.length > 0) {
       const { error } = await supabase
         .from("mustahsiller")
         .upsert(yedek.mustahsiller, { onConflict: "id" });
-      if (error) console.error("Import mustahsiller error:", error);
+      if (error) failures.push(`mustahsiller: ${error.message}`);
     }
 
     if (yedek.hesap_kapamalar && yedek.hesap_kapamalar.length > 0) {
       const { error } = await supabase
         .from("hesap_kapamalar")
         .upsert(yedek.hesap_kapamalar, { onConflict: "id" });
-      if (error) console.error("Import hesap_kapamalar error:", error);
+      if (error) failures.push(`hesap_kapamalar: ${error.message}`);
     }
 
     if (yedek.sut_kayitlari && yedek.sut_kayitlari.length > 0) {
       const { error } = await supabase
         .from("sut_kayitlari")
         .upsert(yedek.sut_kayitlari, { onConflict: "id" });
-      if (error) console.error("Import sut_kayitlari error:", error);
+      if (error) failures.push(`sut_kayitlari: ${error.message}`);
     }
 
     if (yedek.yogurt_musterileri && yedek.yogurt_musterileri.length > 0) {
       const { error } = await supabase
         .from("yogurt_musterileri")
         .upsert(yedek.yogurt_musterileri, { onConflict: "id" });
-      if (error) console.error("Import yogurt_musterileri error:", error);
+      if (error) failures.push(`yogurt_musterileri: ${error.message}`);
     }
 
     if (yedek.yogurt_dagitimlari && yedek.yogurt_dagitimlari.length > 0) {
       const { error } = await supabase
         .from("yogurt_dagitimlari")
         .upsert(yedek.yogurt_dagitimlari, { onConflict: "id" });
-      if (error) console.error("Import yogurt_dagitimlari error:", error);
+      if (error) failures.push(`yogurt_dagitimlari: ${error.message}`);
     }
 
     if (yedek.yogurt_uretimleri && yedek.yogurt_uretimleri.length > 0) {
       const { error } = await supabase
         .from("yogurt_uretimleri")
         .upsert(yedek.yogurt_uretimleri, { onConflict: "tarih" });
-      if (error) console.error("Import yogurt_uretimleri error:", error);
+      if (error) failures.push(`yogurt_uretimleri: ${error.message}`);
     }
 
     if (yedek.gider_kategorileri && yedek.gider_kategorileri.length > 0) {
       const { error } = await supabase
         .from("gider_kategorileri")
         .upsert(yedek.gider_kategorileri, { onConflict: "ad" });
-      if (error) console.error("Import gider_kategorileri error:", error);
+      if (error) failures.push(`gider_kategorileri: ${error.message}`);
     }
 
     if (yedek.giderler && yedek.giderler.length > 0) {
       const { error } = await supabase
         .from("giderler")
         .upsert(yedek.giderler, { onConflict: "id" });
-      if (error) console.error("Import giderler error:", error);
+      if (error) failures.push(`giderler: ${error.message}`);
     }
 
     if (yedek.aylik_kapanislar && yedek.aylik_kapanislar.length > 0) {
       const { error } = await supabase
         .from("aylik_istatistikler")
         .upsert(yedek.aylik_kapanislar, { onConflict: "id" });
-      if (error) console.error("Import aylik_istatistikler error:", error);
+      if (error) failures.push(`aylik_istatistikler: ${error.message}`);
+    }
+
+    if (failures.length > 0) {
+      throw new Error(
+        "Yedek geri yüklenirken bazı tablolar başarısız oldu: " + failures.join(" | ")
+      );
     }
 
     return true;

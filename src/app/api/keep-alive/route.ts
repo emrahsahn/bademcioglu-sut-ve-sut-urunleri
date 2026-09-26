@@ -26,8 +26,9 @@ export async function GET() {
     const startTime = Date.now();
 
     // Veritabanını uyandırmak/aktif tutmak için en hafif sorgu
+    // (kullanicilar tablosu RLS ile anon erişime kapalı olduğu için açık tablo kullanılır)
     const { data, error } = await supabase
-      .from("kullanicilar")
+      .from("mustahsiller")
       .select("id")
       .limit(1);
 

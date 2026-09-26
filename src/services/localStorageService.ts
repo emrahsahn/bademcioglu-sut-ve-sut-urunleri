@@ -12,6 +12,7 @@ import {
   AylikIstatistikKapanis,
 } from "../types/database";
 import { IDataService } from "./storageInterface";
+import { getTodayDateString } from "../lib/utils";
 
 const STORAGE_KEYS = {
   MUSTAHSILLER: "sut_defteri_mustahsiller",
@@ -33,14 +34,14 @@ const DEFAULT_MUSTAHSILLER: Mustahsil[] = [
     ad: "Ahmet Yılmaz (Örnek)",
     telefon: "0532 111 22 33",
     birim_fiyat: 16.5,
-    olusturma_tarihi: new Date().toISOString().split("T")[0],
+    olusturma_tarihi: getTodayDateString(),
   },
   {
     id: "m-2",
     ad: "Mehmet Demir (Örnek)",
     telefon: "0544 222 33 44",
     birim_fiyat: 17.0,
-    olusturma_tarihi: new Date().toISOString().split("T")[0],
+    olusturma_tarihi: getTodayDateString(),
   },
 ];
 
@@ -54,7 +55,7 @@ const DEFAULT_YOGURT_MUSTERILERI: YogurtMusteri[] = [
     kucuk_yogurt_fiyat: 120,
     iade_kova_fiyat: 30,
     bakiye: 0,
-    olusturma_tarihi: new Date().toISOString().split("T")[0],
+    olusturma_tarihi: getTodayDateString(),
   },
   {
     id: "ym-2",
@@ -65,7 +66,7 @@ const DEFAULT_YOGURT_MUSTERILERI: YogurtMusteri[] = [
     kucuk_yogurt_fiyat: 130,
     iade_kova_fiyat: 35,
     bakiye: 0,
-    olusturma_tarihi: new Date().toISOString().split("T")[0],
+    olusturma_tarihi: getTodayDateString(),
   },
 ];
 
@@ -85,7 +86,7 @@ const DEFAULT_GIDERLER: Gider[] = [
     baslik: "Besi Yemi Alımı (20 Çuval)",
     kategori: "Yem & Saman",
     tutar: 8400,
-    tarih: new Date().toISOString().split("T")[0],
+    tarih: getTodayDateString(),
     aciklama: "Tarım kooperatifinden peşin alındı",
     olusturma_zamani: new Date().toISOString(),
   },
@@ -94,7 +95,7 @@ const DEFAULT_GIDERLER: Gider[] = [
     baslik: "Süt Toplama Aracı Mazot",
     kategori: "Akaryakıt / Mazot",
     tutar: 1850,
-    tarih: new Date().toISOString().split("T")[0],
+    tarih: getTodayDateString(),
     aciklama: "Haftalık dağıtım mazotu",
     olusturma_zamani: new Date().toISOString(),
   },
@@ -144,7 +145,7 @@ class LocalStorageService implements IDataService {
     const newMustahsil: Mustahsil = {
       ...data,
       id: "m-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7),
-      olusturma_tarihi: new Date().toISOString().split("T")[0],
+      olusturma_tarihi: getTodayDateString(),
     };
     list.push(newMustahsil);
     this.setItem(STORAGE_KEYS.MUSTAHSILLER, list);
@@ -335,7 +336,7 @@ class LocalStorageService implements IDataService {
       ...data,
       id: "ym-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7),
       bakiye: 0,
-      olusturma_tarihi: new Date().toISOString().split("T")[0],
+      olusturma_tarihi: getTodayDateString(),
     };
     list.push(newMusteri);
     this.setItem(STORAGE_KEYS.YOGURT_MUSTERILERI, list);
@@ -541,7 +542,7 @@ class LocalStorageService implements IDataService {
     const yogurtDagitimlari = await this.getYogurtDagitimlari();
     const giderler = await this.getGiderler();
 
-    const bugunStr = new Date().toISOString().split("T")[0];
+    const bugunStr = getTodayDateString();
 
     let toplamKg = 0;
     let toplamTutar = 0;
