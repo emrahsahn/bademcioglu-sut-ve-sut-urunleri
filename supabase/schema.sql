@@ -5,7 +5,30 @@
 -- tüm tabloları, ilişkileri, RLS güvenlik politikalarını ve başlangıç verilerini tek seferde kurabilirsiniz.
 -- ==============================================================================
 
+-- ==============================================================================
+-- 0. MEVCUT VERİTABANINI SIFIRLAMA / TEMİZLEME (DROP SCRIPTS)
+-- ==============================================================================
+-- DİKKAT: Aşağıdaki satırlar mevcut veritabanındaki tüm tabloları ve verileri siler.
+-- Sıfırdan temiz bir kurulum yapmak için bu bölümü çalıştırabilirsiniz.
+
+DROP TRIGGER IF EXISTS trg_sync_yogurt_dagitim_bakiye ON public.yogurt_dagitimlari;
+DROP FUNCTION IF EXISTS public.fn_sync_musteri_bakiye() CASCADE;
+DROP FUNCTION IF EXISTS public.fn_login_check(TEXT, TEXT) CASCADE;
+
+DROP TABLE IF EXISTS public.sut_kayitlari CASCADE;
+DROP TABLE IF EXISTS public.hesap_kapamalar CASCADE;
+DROP TABLE IF EXISTS public.mustahsiller CASCADE;
+DROP TABLE IF EXISTS public.yogurt_dagitimlari CASCADE;
+DROP TABLE IF EXISTS public.yogurt_musterileri CASCADE;
+DROP TABLE IF EXISTS public.yogurt_uretimleri CASCADE;
+DROP TABLE IF EXISTS public.giderler CASCADE;
+DROP TABLE IF EXISTS public.gider_kategorileri CASCADE;
+DROP TABLE IF EXISTS public.kullanicilar CASCADE;
+DROP TABLE IF EXISTS public.aylik_istatistikler CASCADE;
+
+-- ==============================================================================
 -- 1. TABLOLARIN OLUŞTURULMASI
+-- ==============================================================================
 
 -- 1.1 Müstahsiller (Süt Üreticileri)
 CREATE TABLE IF NOT EXISTS public.mustahsiller (

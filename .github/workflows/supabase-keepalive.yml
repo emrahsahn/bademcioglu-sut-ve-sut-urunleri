@@ -1,0 +1,42 @@
+name: Supabase Veritabani Keep-Alive
+
+on:
+  schedule:
+    # Her 3 günde bir saat 06:00 UTC (TSİ 09:00) çalışır
+    - cron: '0 6 */3 * *'
+  workflow_dispatch: # GitHub Actions sekmesinden tek tıkla elle tetiklenebilir
+
+jobs:
+  ping-supabase:
+    name: Ping Supabase Database
+    runs-on: ubuntu-latest
+    steps:
+      - name: Supabase REST API Ping
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          echo "Supabase veritabanına keep-alive sorgusu gönderiliyor..."
+          
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
+            echo "HATA: GitHub Secrets'a SUPABASE_URL ve SUPABASE_ANON_KEY eklenmemiş."
+            echo "GitHub repo -> Settings -> Secrets and variables -> Actions -> New repository secret"
+            exit 1
+          fi
+
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY" \
+            "$SUPABASE_URL/rest/v1/mustahsiller?select=id&limit=1")
+          
+          STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)
+          BODY=$(echo "$RESPONSE" | grep -v "HTTP_STATUS")
+          
+          echo "HTTP Durum Kodu: $STATUS"
+          echo "Gelen Yanıt: $BODY"
+          
+          if [ "$STATUS" -eq 200 ] || [ "$STATUS" -eq 206 ]; then
+            echo "✓ Başarılı: Supabase veritabanı aktif ve yanıt veriyor."
+          else
+            echo "Uyarı: HTTP $STATUS döndü. Eğer proje duraklatıldıysa (paused) Supabase panelinden Restore/Resume edilmesi gerekebilir."
+          fi
