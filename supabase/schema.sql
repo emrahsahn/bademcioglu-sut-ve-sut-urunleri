@@ -301,9 +301,9 @@ VALUES
     ('g-2', 'Süt Toplama Aracı Mazot', 'Akaryakıt / Mazot', 1850.00, CURRENT_DATE, 'Haftalık dağıtım mazotu', NOW())
 ON CONFLICT (id) DO NOTHING;
 
--- Varsayılan Yönetici Kullanıcısı
+-- Varsayılan Yönetici Kullanıcısı (Örnek şablon - Kendi kullanıcı adı ve güçlü şifrenizi belirleyiniz)
 INSERT INTO public.kullanicilar (id, kullanici_adi, sifre, ad_soyad, rol, aktif)
 VALUES
-    ('usr-admin', 'bademcioglu_yonetim', 'Bademcioglu.33*Mandira!', 'Sistem Yöneticisi', 'Yönetici', TRUE)
+    ('usr-admin', 'yonetici_admin', 'GucluSifre.2026!*', 'Sistem Yöneticisi', 'Yönetici', TRUE)
 ON CONFLICT (kullanici_adi) DO NOTHING;
 

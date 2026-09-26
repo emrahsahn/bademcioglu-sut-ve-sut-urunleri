@@ -171,8 +171,8 @@ npm install
 ### 3. Ortam Değişkenlerini Tanımlayın
 Proje kök dizininde `.env.local` dosyası oluşturun ve giriş bilgilerinizi belirleyin:
 ```env
-NEXT_PUBLIC_ADMIN_USERNAME=bademcioglu_yonetim
-NEXT_PUBLIC_ADMIN_PIN=Bademcioglu.33*Mandira!
+NEXT_PUBLIC_ADMIN_USERNAME=ornek_kullanici_adi
+NEXT_PUBLIC_ADMIN_PIN=ornek_guclu_sifre_buraya
 ```
 
 ### 4. Geliştirici Sunucusunu Başlatın
