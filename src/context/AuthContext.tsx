@@ -4,6 +4,13 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { useRouter } from "next/navigation";
 
 import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
+import {
+  logLoginSuccess,
+  logLoginFailed,
+  logLoginBlocked,
+  logLogout,
+} from "@/lib/vercel-watch-logger";
+
 
 export interface AuthUser {
   username: string;
@@ -174,18 +181,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (username: string, pin: string, rememberMe = true) => {
+    const cleanUser = username?.trim() || "";
+    const cleanPin = pin?.trim() || "";
+
     // 1. Kilit kontrolü (Brute-Force Lockout)
     const now = Date.now();
     if (lockedUntil && lockedUntil > now) {
       const remaining = Math.ceil((lockedUntil - now) / 1000);
+      logLoginBlocked({
+        username: cleanUser || "admin",
+        details: `Kilitli kullanıcı tekrar giriş denemesi yaptı. Kalan kilit süresi: ${remaining} saniye.`,
+      });
       return {
         success: false,
         error: `Çok sayıda hatalı deneme yapıldı. Lütfen ${remaining} saniye bekleyiniz.`,
       };
     }
-
-    const cleanUser = username.trim();
-    const cleanPin = pin.trim();
 
     if (!cleanUser) {
       return { success: false, error: "Lütfen kullanıcı adınızı giriniz." };
@@ -248,11 +259,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!dbUser) {
           const { isLockedNow, durationSeconds } = recordFailedAttempt();
           if (isLockedNow) {
+            logLoginBlocked({
+              username: cleanUser,
+              details: `Çok sayıda hatalı deneme nedeniyle sistem ${durationSeconds} saniye kilitlendi.`,
+            });
             return {
               success: false,
               error: `Hatalı kullanıcı adı veya şifre! Lütfen ${durationSeconds} saniye bekleyiniz.`,
             };
           }
+          logLoginFailed({
+            username: cleanUser,
+            details: "Hatalı şifre veya kullanıcı adı denemesi (Supabase).",
+          });
           const remainingAttempts = MAX_FREE_ATTEMPTS - (failedAttempts + 1);
           return {
             success: false,
@@ -290,11 +309,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!isUserValid || !isPinValid) {
         const { isLockedNow, durationSeconds } = recordFailedAttempt();
         if (isLockedNow) {
+          logLoginBlocked({
+            username: cleanUser,
+            details: `Çok sayıda hatalı deneme nedeniyle sistem ${durationSeconds} saniye kilitlendi.`,
+          });
           return {
             success: false,
             error: `Hatalı kullanıcı adı veya şifre! Lütfen ${durationSeconds} saniye bekleyiniz.`,
           };
         }
+        logLoginFailed({
+          username: cleanUser,
+          details: "Hatalı şifre veya kullanıcı adı denemesi (Yerel).",
+        });
         const remainingAttempts = MAX_FREE_ATTEMPTS - (failedAttempts + 1);
         return {
           success: false,
@@ -312,6 +339,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Başarılı giriş: Güvenlik sayacını sıfırla
     clearSecurityState();
 
+    logLoginSuccess({
+      username: authUserResult.username,
+      details: `${authUserResult.name} (${authUserResult.role}) panele başarıyla oturum açtı.`,
+    });
+
     setUser(authUserResult);
     if (rememberMe) {
       try {
@@ -326,6 +358,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 
   const logout = () => {
+    if (user?.username) {
+      logLogout({
+        username: user.username,
+        details: `${user.name || user.username} güvenli bir şekilde oturumu kapattı.`,
+      });
+    }
     setUser(null);
     try {
       localStorage.removeItem(AUTH_STORAGE_KEY);
