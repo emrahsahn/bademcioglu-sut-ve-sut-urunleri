@@ -36,12 +36,18 @@ const DEFAULT_PROJECT_URL =
   process.env.VERCEL_WATCH_PROJECT_URL ||
   "https://bademcioglu-sut-ve-sut-urunleri.vercel.app";
 
+const DEFAULT_API_KEY =
+  process.env.VERCEL_WATCH_API_KEY ||
+  process.env.WATCH_API_KEY ||
+  process.env.NEXT_PUBLIC_VERCEL_WATCH_API_KEY ||
+  "vw_live_sec_7c4f19b6a03e82d1";
+
 const defaultConfig: VercelWatchConfig = {
   watchUrl:
     process.env.VERCEL_WATCH_URL ||
     process.env.NEXT_PUBLIC_VERCEL_WATCH_URL ||
     "https://vercel-website-security.vercel.app",
-  apiKey: process.env.VERCEL_WATCH_API_KEY || process.env.WATCH_API_KEY,
+  apiKey: DEFAULT_API_KEY,
   defaultProjectId: DEFAULT_PROJECT_ID,
   defaultProjectName: DEFAULT_PROJECT_NAME,
   defaultProjectUrl: DEFAULT_PROJECT_URL,
@@ -77,10 +83,6 @@ export function extractUserAgent(req: any): string {
 }
 
 export async function sendWatchLog(payload: WatchLogPayload, config: VercelWatchConfig = {}): Promise<boolean> {
-  const watchUrl = (config.watchUrl || defaultConfig.watchUrl || "").replace(/\/+$/, "");
-  const apiKey = config.apiKey || defaultConfig.apiKey;
-  if (!watchUrl) return false;
-
   const projId = payload.projectId || config.defaultProjectId || defaultConfig.defaultProjectId || DEFAULT_PROJECT_ID;
   const projName = payload.projectName || config.defaultProjectName || defaultConfig.defaultProjectName || projId;
   const projUrl = payload.projectUrl || config.defaultProjectUrl || defaultConfig.defaultProjectUrl || DEFAULT_PROJECT_URL;
@@ -92,11 +94,32 @@ export async function sendWatchLog(payload: WatchLogPayload, config: VercelWatch
     event: payload.event,
     username: payload.username || "admin",
     ip: payload.ip || "127.0.0.1",
-    userAgent: payload.userAgent || "",
+    userAgent: payload.userAgent || (typeof navigator !== "undefined" ? navigator.userAgent : ""),
     details: payload.details || "",
     notifyTelegram: payload.notifyTelegram ?? true,
     timestamp: new Date().toISOString(),
   };
+
+  // 1. Tarayıcı ortamında ise doğrudan yerel sunucu proxy'sini (/api/watch-log) kullan
+  // Bu sayede istemcinin gerçek IP'si otomatik alınır ve gizli API anahtarı güvenle sunucuda eklenir
+  if (typeof window !== "undefined") {
+    try {
+      const proxyRes = await fetch("/api/watch-log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(finalPayload),
+        signal: AbortSignal.timeout(4000),
+      });
+      if (proxyRes.ok) return true;
+    } catch {
+      // Yerel proxy başarısız olursa doğrudan harici servise fallback yap
+    }
+  }
+
+  // 2. Sunucu tarafı veya doğrudan harici VercelWatch ingest API çağrısı
+  const watchUrl = (config.watchUrl || defaultConfig.watchUrl || "").replace(/\/+$/, "");
+  const apiKey = config.apiKey || defaultConfig.apiKey || DEFAULT_API_KEY;
+  if (!watchUrl) return false;
 
   try {
     const headers: Record<string, string> = { "Content-Type": "application/json" };
